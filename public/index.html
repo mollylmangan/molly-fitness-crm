@@ -735,11 +735,24 @@ async function approveAll() {
   if (!confirm(`Send all ${count} pending emails now?`)) return;
   btn.classList.add('btn-loading'); btn.disabled = true; btn.textContent = 'Sending…';
   try {
-    const res = await api('/api/tasks/approve-all', 'POST');
-    toast(`✅ ${res.sent} sent${res.errors ? `, ${res.errors} failed` : ''}`, res.errors ? 'error' : 'success');
-    loadQueue(); loadStats();
-  } catch(e) { toast('Batch send failed', 'error'); }
-  finally { btn.classList.remove('btn-loading'); btn.disabled = false; btn.textContent = '✉ Send All'; }
+    const res = await fetch('/api/tasks/approve-all', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Server error');
+    toast(`Sending ${data.queued} emails in the background — queue will update shortly`, 'success');
+    // Poll until all queued tasks are gone (sent/failed)
+    let polls = 0;
+    const poll = setInterval(async () => {
+      polls++;
+      await loadQueue();
+      await loadStats();
+      const remaining = document.getElementById('taskList').querySelectorAll('.task-card').length;
+      if (remaining === 0 || polls >= 30) clearInterval(poll);
+    }, 3000);
+  } catch(e) {
+    toast('Send failed — check your Gmail password in settings', 'error');
+  } finally {
+    btn.classList.remove('btn-loading'); btn.disabled = false; btn.textContent = '✉ Send All';
+  }
 }
 
 // ── Leads ─────────────────────────────────────────────────────────────────────

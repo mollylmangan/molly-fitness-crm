@@ -4,7 +4,7 @@ Molly's Fitness Coaching - CRM & Email Automation
 Flask backend · Railway-deployable
 """
 
-import json, os, uuid, smtplib, subprocess
+import json, os, uuid, smtplib, subprocess, threading
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -373,39 +373,52 @@ def skip_task(tid):
             return jsonify(tasks[i])
     return jsonify({'error': 'Not found'}), 404
 
+_send_lock = threading.Lock()
+
+def _do_send_all(task_ids):
+    """Background thread: send all queued emails over one SMTP connection."""
+    with _send_lock:
+        tasks = read_json(TASKS_FILE)
+        id_set = set(task_ids)
+        email_indices = []
+        to_send = []
+        for i, task in enumerate(tasks):
+            if task.get('id') not in id_set: continue
+            if task.get('channel') == 'email' and task.get('recipientEmail'):
+                email_indices.append(i)
+                to_send.append((task['recipientEmail'], task.get('subject', ''), task.get('script', '')))
+        if to_send:
+            try:
+                results = send_email_batch(to_send)
+            except Exception:
+                results = [(addr, False, 'smtp error') for addr, _, __ in to_send]
+            for idx, (_, ok, _err) in zip(email_indices, results):
+                if ok:
+                    tasks[idx]['status'] = 'sent'
+                    tasks[idx]['sentAt'] = now_iso()
+                    advance_lead(tasks[idx].get('fitnessLeadId'), tasks[idx].get('sequenceStep', 0))
+                else:
+                    tasks[idx]['status'] = 'failed'
+        write_json(TASKS_FILE, tasks)
+
 @app.route('/api/tasks/approve-all', methods=['POST'])
 def approve_all():
-    """Batch-approve all pending tasks using a single SMTP connection."""
+    """Mark all pending tasks as queued, return immediately, send in background."""
     tasks = read_json(TASKS_FILE)
-
-    # Collect all email tasks to send in one batch
-    email_indices = []
-    to_send = []
+    queued_ids = []
     for i, task in enumerate(tasks):
         if task.get('taskType') != 'fitness_sequence': continue
         if task.get('status') != 'pending': continue
         if task.get('channel') == 'email' and task.get('recipientEmail') and GMAIL_PASS:
-            email_indices.append(i)
-            to_send.append((task['recipientEmail'], task.get('subject', ''), task.get('script', '')))
+            tasks[i]['status'] = 'queued'
+            queued_ids.append(task['id'])
         else:
             tasks[i]['status']     = 'approved'
             tasks[i]['approvedAt'] = now_iso()
-
-    sent = 0
-    errors = 0
-    if to_send:
-        results = send_email_batch(to_send)
-        for idx, (to_addr, ok, _) in zip(email_indices, results):
-            if ok:
-                tasks[idx]['status'] = 'sent'
-                tasks[idx]['sentAt'] = now_iso()
-                advance_lead(tasks[idx].get('fitnessLeadId'), tasks[idx].get('sequenceStep', 0))
-                sent += 1
-            else:
-                errors += 1
-
     write_json(TASKS_FILE, tasks)
-    return jsonify({'sent': sent, 'errors': errors})
+    if queued_ids:
+        threading.Thread(target=_do_send_all, args=(queued_ids,), daemon=True).start()
+    return jsonify({'queued': len(queued_ids)})
 
 # ── Generate ───────────────────────────────────────────────────────────────────
 @app.route('/api/generate', methods=['POST'])
