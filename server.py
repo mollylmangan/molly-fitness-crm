@@ -89,15 +89,17 @@ def _email(step, first):
             'subject': 'quick thing about the glute guide',
             'body': f"""Hey {first},
 
-Thanks for downloading the guide. I hope it was actually useful.
+Thanks for downloading the guide. I hope it gave you something useful to work with.
 
-I wanted to add something that did not make it in but that I think matters more than any exercise listed in it.
+One thing I want to add that did not make it into the guide is how much intensity actually matters, and how most people get it wrong in both directions.
 
-The reason most people do not see results from a glute program is not the exercises. It is that your brain has not learned to actually use your glutes yet. Most people recruit their quads and hamstrings without realizing it, and their glutes just come along for the ride doing almost nothing.
+A lot of people either coast through their workouts without really pushing, or they go so hard that their form breaks down and they end up working everything except the muscles they are trying to target. The sweet spot is somewhere in between, and RPE is the easiest way to find it. RPE stands for rate of perceived exertion. On a scale of 1 to 10, most of your working sets should land around a 7 or 8. That means you could do 2 or 3 more reps if you had to, but you are genuinely working. Not just going through the motions.
 
-Before your next glute session, try this. Do 15 slow bodyweight hip thrusts with a 3-second hold at the top before you touch any weight. No loading, just activation. Then go into your normal workout and notice if anything feels different.
+The other piece is form that actually fits your body. Glute exercises are not one size fits all. Hip width, femur length, and how you are built all change what a good hip thrust or squat looks like for you. If a standard cue does not feel right, it might not be wrong technique. It might just be the wrong technique for your anatomy. A wider stance, toes turned out slightly, or a different foot position on the platform can completely change what you feel.
 
-I am curious what your training looks like right now. What is the one thing you feel like you are doing right but still not seeing results from?
+And underneath all of it is progressive overload. You have to be doing more over time, whether that is more weight, more reps, or less rest. If you are training consistently but the numbers are not moving, that is usually why results have stalled.
+
+I would love to hear how the guide landed for you. Was there anything that clicked, anything that felt off, or anything you wished it covered more?
 
 Reply and let me know. I read every one.{SIG}"""
         }
