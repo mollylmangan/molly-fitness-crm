@@ -61,11 +61,12 @@
     "signupDate": "",
     "sequenceStartDate": "2026-04-29",
     "sequenceStep": 0,
-    "status": "active",
+    "status": "skipped",
     "addedAt": "2026-04-29T21:15:34.331953",
     "lastEmailedAt": null,
     "emailsSent": [],
-    "gender": "female"
+    "gender": "female",
+    "skipReason": "follows on Instagram"
   },
   {
     "id": "9b3d66e0-cfbb-4798-9546-cbea5b32d28c",
@@ -148,11 +149,12 @@
     "signupDate": "",
     "sequenceStartDate": "2026-04-29",
     "sequenceStep": 0,
-    "status": "pending_review",
+    "status": "skipped",
     "addedAt": "2026-04-29T21:15:34.331985",
     "lastEmailedAt": null,
     "emailsSent": [],
-    "gender": "unknown"
+    "gender": "unknown",
+    "skipReason": "follows on Instagram"
   },
   {
     "id": "2656a8cf-9f29-4253-ad57-1957848b89e6",
@@ -304,11 +306,12 @@
     "signupDate": "",
     "sequenceStartDate": "2026-04-29",
     "sequenceStep": 0,
-    "status": "active",
+    "status": "skipped",
     "addedAt": "2026-04-29T21:15:34.332028",
     "lastEmailedAt": null,
     "emailsSent": [],
-    "gender": "female"
+    "gender": "female",
+    "skipReason": "follows on Instagram"
   },
   {
     "id": "210ee8c0-bba5-4640-8475-06013c04180e",
@@ -321,11 +324,12 @@
     "signupDate": "",
     "sequenceStartDate": "2026-04-29",
     "sequenceStep": 0,
-    "status": "active",
+    "status": "skipped",
     "addedAt": "2026-04-29T21:15:34.332033",
     "lastEmailedAt": null,
     "emailsSent": [],
-    "gender": "female"
+    "gender": "female",
+    "skipReason": "follows on Instagram"
   },
   {
     "id": "bed4455c-2d18-49a4-bd99-fb84dced5a08",
@@ -407,11 +411,12 @@
     "signupDate": "",
     "sequenceStartDate": "2026-04-29",
     "sequenceStep": 0,
-    "status": "active",
+    "status": "skipped",
     "addedAt": "2026-04-29T21:15:34.332056",
     "lastEmailedAt": null,
     "emailsSent": [],
-    "gender": "female"
+    "gender": "female",
+    "skipReason": "follows on Instagram"
   },
   {
     "id": "aff8d759-b381-47e8-be9f-82eb3021783a",
@@ -424,11 +429,12 @@
     "signupDate": "",
     "sequenceStartDate": "2026-04-29",
     "sequenceStep": 0,
-    "status": "active",
+    "status": "skipped",
     "addedAt": "2026-04-29T21:15:34.332061",
     "lastEmailedAt": null,
     "emailsSent": [],
-    "gender": "female"
+    "gender": "female",
+    "skipReason": "follows on Instagram"
   },
   {
     "id": "10643e27-495d-41a2-bf1f-6921201641a1",
@@ -441,11 +447,12 @@
     "signupDate": "",
     "sequenceStartDate": "2026-04-29",
     "sequenceStep": 0,
-    "status": "active",
+    "status": "skipped",
     "addedAt": "2026-04-29T21:15:34.332066",
     "lastEmailedAt": null,
     "emailsSent": [],
-    "gender": "female"
+    "gender": "female",
+    "skipReason": "follows on Instagram"
   },
   {
     "id": "e61d92d6-1acf-4b56-a269-6a802e8eddc2",
@@ -807,11 +814,12 @@
     "signupDate": "",
     "sequenceStartDate": "2026-04-29",
     "sequenceStep": 0,
-    "status": "active",
+    "status": "skipped",
     "addedAt": "2026-04-29T21:15:34.332167",
     "lastEmailedAt": null,
     "emailsSent": [],
-    "gender": "female"
+    "gender": "female",
+    "skipReason": "follows on Instagram"
   },
   {
     "id": "8587d181-db73-4fa1-87e4-86ed691eaee2",
@@ -877,11 +885,12 @@
     "signupDate": "",
     "sequenceStartDate": "2026-04-29",
     "sequenceStep": 0,
-    "status": "active",
+    "status": "skipped",
     "addedAt": "2026-04-29T21:15:34.332186",
     "lastEmailedAt": null,
     "emailsSent": [],
-    "gender": "female"
+    "gender": "female",
+    "skipReason": "follows on Instagram"
   },
   {
     "id": "c220d34d-2d08-42f7-933f-14778034ac95",
@@ -2152,11 +2161,12 @@
     "signupDate": "",
     "sequenceStartDate": "2026-04-29",
     "sequenceStep": 0,
-    "status": "active",
+    "status": "skipped",
     "addedAt": "2026-04-29T21:15:34.332555",
     "lastEmailedAt": null,
     "emailsSent": [],
-    "gender": "female"
+    "gender": "female",
+    "skipReason": "follows on Instagram"
   },
   {
     "id": "f3d740f4-a011-4ea1-8182-717138420ed2",
@@ -3361,11 +3371,12 @@
     "signupDate": "",
     "sequenceStartDate": "2026-04-29",
     "sequenceStep": 0,
-    "status": "active",
+    "status": "skipped",
     "addedAt": "2026-04-29T21:15:34.332924",
     "lastEmailedAt": null,
     "emailsSent": [],
-    "gender": "female"
+    "gender": "female",
+    "skipReason": "follows on Instagram"
   },
   {
     "id": "e6c9d239-4ad9-4523-8585-7e02ded3a7fa",
@@ -16979,11 +16990,12 @@
     "signupDate": "2026-04-07",
     "sequenceStartDate": "2026-05-03",
     "sequenceStep": 0,
-    "status": "active",
+    "status": "skipped",
     "addedAt": "2026-04-29T21:15:34.337121",
     "lastEmailedAt": null,
     "emailsSent": [],
-    "gender": "female"
+    "gender": "female",
+    "skipReason": "follows on Instagram"
   },
   {
     "id": "8a85de8c-a7ec-4683-9f22-8393e6bf13f5",
@@ -20594,11 +20606,12 @@
     "signupDate": "2026-03-28",
     "sequenceStartDate": "2026-05-05",
     "sequenceStep": 0,
-    "status": "active",
+    "status": "skipped",
     "addedAt": "2026-04-29T21:15:34.338144",
     "lastEmailedAt": null,
     "emailsSent": [],
-    "gender": "female"
+    "gender": "female",
+    "skipReason": "follows on Instagram"
   },
   {
     "id": "4c032717-b670-41ce-a64f-bbe5252bae44",
@@ -21462,11 +21475,12 @@
     "signupDate": "2026-03-27",
     "sequenceStartDate": "2026-05-05",
     "sequenceStep": 0,
-    "status": "active",
+    "status": "skipped",
     "addedAt": "2026-04-29T21:15:34.338390",
     "lastEmailedAt": null,
     "emailsSent": [],
-    "gender": "female"
+    "gender": "female",
+    "skipReason": "follows on Instagram"
   },
   {
     "id": "ac21c955-3cf4-42ce-8949-b7198887f571",
@@ -28352,11 +28366,12 @@
     "signupDate": "2026-03-19",
     "sequenceStartDate": "2026-05-07",
     "sequenceStep": 0,
-    "status": "active",
+    "status": "skipped",
     "addedAt": "2026-04-29T21:15:34.340373",
     "lastEmailedAt": null,
     "emailsSent": [],
-    "gender": "female"
+    "gender": "female",
+    "skipReason": "follows on Instagram"
   },
   {
     "id": "d5e08476-d80d-4a9e-82e8-9d6f31bea0f6",
@@ -31234,11 +31249,12 @@
     "signupDate": "2026-03-14",
     "sequenceStartDate": "2026-05-08",
     "sequenceStep": 0,
-    "status": "active",
+    "status": "skipped",
     "addedAt": "2026-04-29T21:15:34.341214",
     "lastEmailedAt": null,
     "emailsSent": [],
-    "gender": "female"
+    "gender": "female",
+    "skipReason": "follows on Instagram"
   },
   {
     "id": "3fb1ad0e-3e20-41c7-b8cf-df20e00f30c7",
@@ -31763,11 +31779,12 @@
     "signupDate": "2026-03-12",
     "sequenceStartDate": "2026-05-08",
     "sequenceStep": 0,
-    "status": "active",
+    "status": "skipped",
     "addedAt": "2026-04-29T21:15:34.341375",
     "lastEmailedAt": null,
     "emailsSent": [],
-    "gender": "female"
+    "gender": "female",
+    "skipReason": "follows on Instagram"
   },
   {
     "id": "56572be0-c667-4aba-a2d6-94c6adfcb6e1",
