@@ -65,18 +65,37 @@ def get_first_name(full_name):
     return first if len(first) >= 2 and first.replace("'", '').isalpha() else 'there'
 
 # ── Gmail ──────────────────────────────────────────────────────────────────────
-def send_email(to_addr, subject, body):
-    if not GMAIL_PASS:
-        raise ValueError('GMAIL_APP_PASSWORD not configured')
+def _build_msg(to_addr, subject, body):
     msg = MIMEMultipart()
     msg['From']    = f'"Molly Mangan" <{GMAIL_USER}>'
     msg['To']      = to_addr
     msg['Subject'] = subject
     msg.attach(MIMEText(body, 'plain'))
+    return msg
+
+def send_email(to_addr, subject, body):
+    if not GMAIL_PASS:
+        raise ValueError('GMAIL_APP_PASSWORD not configured')
     with smtplib.SMTP('smtp.gmail.com', 587, timeout=15) as s:
         s.ehlo(); s.starttls(); s.ehlo()
         s.login(GMAIL_USER, GMAIL_PASS)
-        s.sendmail(GMAIL_USER, [to_addr], msg.as_string())
+        s.sendmail(GMAIL_USER, [to_addr], _build_msg(to_addr, subject, body).as_string())
+
+def send_email_batch(messages):
+    """Send multiple (to_addr, subject, body) tuples over a single SMTP connection."""
+    if not GMAIL_PASS:
+        raise ValueError('GMAIL_APP_PASSWORD not configured')
+    with smtplib.SMTP('smtp.gmail.com', 587, timeout=30) as s:
+        s.ehlo(); s.starttls(); s.ehlo()
+        s.login(GMAIL_USER, GMAIL_PASS)
+        results = []
+        for to_addr, subject, body in messages:
+            try:
+                s.sendmail(GMAIL_USER, [to_addr], _build_msg(to_addr, subject, body).as_string())
+                results.append((to_addr, True, None))
+            except Exception as e:
+                results.append((to_addr, False, str(e)))
+        return results
 
 # ── Email sequence templates ───────────────────────────────────────────────────
 SIG = '\nMolly'
@@ -356,25 +375,35 @@ def skip_task(tid):
 
 @app.route('/api/tasks/approve-all', methods=['POST'])
 def approve_all():
-    """Batch-approve all pending tasks."""
-    tasks   = read_json(TASKS_FILE)
-    sent    = 0
-    errors  = 0
+    """Batch-approve all pending tasks using a single SMTP connection."""
+    tasks = read_json(TASKS_FILE)
+
+    # Collect all email tasks to send in one batch
+    email_indices = []
+    to_send = []
     for i, task in enumerate(tasks):
         if task.get('taskType') != 'fitness_sequence': continue
         if task.get('status') != 'pending': continue
         if task.get('channel') == 'email' and task.get('recipientEmail') and GMAIL_PASS:
-            try:
-                send_email(task['recipientEmail'], task.get('subject', ''), task.get('script', ''))
-                tasks[i]['status'] = 'sent'
-                tasks[i]['sentAt'] = now_iso()
-                advance_lead(task.get('fitnessLeadId'), task.get('sequenceStep', 0))
-                sent += 1
-            except Exception:
-                errors += 1
+            email_indices.append(i)
+            to_send.append((task['recipientEmail'], task.get('subject', ''), task.get('script', '')))
         else:
             tasks[i]['status']     = 'approved'
             tasks[i]['approvedAt'] = now_iso()
+
+    sent = 0
+    errors = 0
+    if to_send:
+        results = send_email_batch(to_send)
+        for idx, (to_addr, ok, _) in zip(email_indices, results):
+            if ok:
+                tasks[idx]['status'] = 'sent'
+                tasks[idx]['sentAt'] = now_iso()
+                advance_lead(tasks[idx].get('fitnessLeadId'), tasks[idx].get('sequenceStep', 0))
+                sent += 1
+            else:
+                errors += 1
+
     write_json(TASKS_FILE, tasks)
     return jsonify({'sent': sent, 'errors': errors})
 
