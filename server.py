@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Molly's Fitness Coaching — CRM & Email Automation
+Molly's Fitness Coaching - CRM & Email Automation
 Flask backend · Railway-deployable
 """
 
@@ -79,165 +79,129 @@ def send_email(to_addr, subject, body):
         s.sendmail(GMAIL_USER, [to_addr], msg.as_string())
 
 # ── Email sequence templates ───────────────────────────────────────────────────
-SIG = '\nMolly\n@mollylmangan'
+SIG = '\nMolly'
+STAN = 'stan.store/mollylmangan'
 SEQUENCE_DAYS = [0, 3, 6, 9, 13, 17]
 
 def _email(step, first):
     if step == 0:
         return {
-            'subject': 'the thing nobody tells you after downloading a glute guide 👀',
+            'subject': 'quick thing about the glute guide',
             'body': f"""Hey {first},
 
-Thanks for grabbing my "How to Build Glutes That Actually Grow" guide!
+Thanks for downloading the guide. I hope it was actually useful.
 
-Quick heads up — most people read it, get excited, then go back to their usual routine and wonder why nothing changes.
+I wanted to add something that did not make it in but that I think matters more than any exercise listed in it.
 
-The guide gives you the *what*. This email gives you the *why*.
+The reason most people do not see results from a glute program is not the exercises. It is that your brain has not learned to actually use your glutes yet. Most people recruit their quads and hamstrings without realizing it, and their glutes just come along for the ride doing almost nothing.
 
-The #1 reason glutes don't grow isn't the exercises. It's the mind-muscle connection. Your brain literally has to learn to recruit your glutes before they'll respond to training — otherwise your quads and hamstrings steal all the work.
+Before your next glute session, try this. Do 15 slow bodyweight hip thrusts with a 3-second hold at the top before you touch any weight. No loading, just activation. Then go into your normal workout and notice if anything feels different.
 
-Here's the one thing to do THIS WEEK:
+I am curious what your training looks like right now. What is the one thing you feel like you are doing right but still not seeing results from?
 
-Before every glute exercise, do 15 slow bodyweight hip thrusts with a 3-second squeeze at the top. No weight. Just activation. This wakes up your glutes so when you load the movement, they actually fire.
-
-Try it and DM me how it felt — I'm always on Instagram: @mollylmangan{SIG}"""
+Reply and let me know. I read every one.{SIG}"""
         }
     if step == 1:
         return {
-            'subject': '6.5 inches off her waist. 30 days. (Vanessa\'s story)',
+            'subject': 'wanted to share this',
             'body': f"""Hey {first},
 
-I need to share something because it honestly still gets me every time.
+I have a client named Vanessa. She had been working out on and off for years and was close to giving up because she never saw the shape she was working toward.
 
-My client Vanessa came to me last month. She'd worked out on and off for years but never saw the shape she was going for. She was close to giving up.
+In her first month with me her waist went from 38 inches to 31.5 inches and her hips gained an inch. She is now lifting weights she never thought she could.
 
-In her first month working with me:
+I also work with Andrea who had never trained a day in her life before we started. She is getting stronger every week and the cravings she used to fight every night are completely gone.
 
-→ Waist went from 38 inches down to 31.5 inches
-→ Hips gained 1 inch
-→ She's lifting weights she never thought she could touch
+I am not sharing this to impress you. I am sharing it because I think a lot of people are one good plan away from results like that and do not know it.
 
-6.5 inches. One month. Real food, real training, no gimmicks.
+What has your experience been? Have you tried a structured program before or has it mostly been figuring things out on your own?
 
-And my client Andrea had never worked out a day in her life before we started. She's now getting stronger every single week — and the cravings she used to battle every night? Completely gone.
-
-These results don't come from a harder workout. They come from a plan that's actually built for your body.
-
-If you're curious what that could look like for you, just hit reply. I read every email personally.{SIG}"""
+Either way, just reply. I am genuinely happy to hear where you are at.{SIG}"""
         }
     if step == 2:
         return {
-            'subject': 'the real reason your glutes aren\'t growing',
+            'subject': 'the honest reason your glutes are not growing',
             'body': f"""Hey {first},
 
-I'm going to be honest about something most fitness coaches won't say:
+I see the same five mistakes constantly and I want to be straight with you about them.
 
-Most glute programs don't work — not because the exercises are wrong, but because they're built for nobody in particular.
+Training glutes every day. They need at least 48 hours to recover. Training them every day is one of the fastest ways to stall.
 
-Here are the five mistakes I see constantly:
+Not enough protein. Muscle cannot build without it. Most people eating a normal diet are well short of what they actually need.
 
-❌ Training glutes every day (they need 48hrs to recover and grow)
-❌ Not eating enough protein (muscle literally cannot build without it)
-❌ Skipping hip hinge movements — deadlifts, RDLs — the #1 driver of glute growth
-❌ Too much cardio cancelling out the muscle you're trying to build
-❌ No progressive overload — doing the same weight every week
+Skipping hip hinge movements. Deadlifts and Romanian deadlifts are the biggest drivers of glute growth and most programs either skip them or bury them at the end when you are already tired.
 
-The fix isn't more effort. It's a smarter plan built around how your body actually works.
+Too much cardio. Long steady state cardio and muscle building work against each other if you are not eating enough to support both.
 
-That's what I do with my 1:1 clients. I look at what you're doing, what you're eating, and what your goal actually is — then build a program around you specifically.
+No progressive overload. If you are lifting the same weight week after week you are maintaining, not growing.
 
-My Custom Fitness Plan is $150/month: a fully custom training program, nutrition guidance, and monthly check-ins.
+If you are being consistent and not seeing results it is almost certainly one of these.
 
-Reply "CUSTOM" and I'll send you the details.{SIG}"""
+I put together custom plans for people who are stuck here. If you want me to take a look at what you are doing and build something that fits your body and schedule, everything is at {STAN}.
+
+And if you want a second opinion on your current routine before committing to anything, just reply with what you are doing. Happy to give you honest feedback.{SIG}"""
         }
     if step == 3:
         return {
-            'subject': 'here\'s exactly what working with me looks like',
+            'subject': 'what working with me actually looks like',
             'body': f"""Hey {first},
 
-A few days ago I shared Vanessa's results — 6.5 inches off her waist and 1 inch added to her hips in one month.
+A few days ago I mentioned Vanessa losing 6.5 inches off her waist in one month. I got a lot of replies asking what that actually involved, so I want to be direct about what I offer.
 
-So let me be completely direct about what I offer:
+The Custom Fitness Plan is $150 a month. You get a training program built specifically for your goals and your schedule, nutrition advice that is not a restrictive diet, monthly check-ins to adjust as you go, and the ability to message me with questions.
 
-──────────────────────────
-💪 CUSTOM FITNESS PLAN — $150/month
-──────────────────────────
-→ Fully custom training program for your goals and schedule
-→ Nutrition advice (real food, not a restrictive diet)
-→ Monthly check-ins to adjust as you progress
-→ Access to message me with questions
+The Premium 1:1 Coaching is $300 a month. Everything above plus weekly check-ins instead of monthly, video form reviews, full nutrition coaching, and priority access to me during the week.
 
-──────────────────────────
-🥇 PREMIUM 1:1 COACHING — $300/month
-──────────────────────────
-→ Everything above, plus:
-→ Weekly check-ins (not monthly)
-→ Video form reviews
-→ Full nutrition coaching
-→ Priority access to me throughout the week
+Both have limited spots because I want to give each person real attention.
 
-Both options have limited spots — I only take on clients I can actually give real attention to.
+If either sounds like a fit you can see the details and sign up at {STAN}.
 
-Reply with your goal and I'll tell you which option makes the most sense for you. No pressure, just an honest conversation.{SIG}"""
+If you are not sure which one makes sense for your situation, just reply and tell me your goal. I will tell you honestly which is the better fit and why.{SIG}"""
         }
     if step == 4:
-        today = datetime.utcnow()
+        today  = datetime.utcnow()
         summer = datetime(today.year, 6, 21)
         weeks  = max(1, round((summer - today).days / 7))
         return {
-            'subject': f'summer is {weeks} weeks away. here\'s what I\'d do.',
+            'subject': f'summer is {weeks} weeks away',
             'body': f"""Hey {first},
 
-Summer is {weeks} weeks away. I know — where did the time go.
+Summer is {weeks} weeks away. I know that can sound like I am trying to create urgency. I am not. I just think it is useful context.
 
-Here's the thing: {weeks} weeks is the perfect window. Focused, consistent work in this window produces real, visible results.
+Eight weeks is a realistic window for a visible change if the plan is right. Not a dramatic transformation, but a real one. Enough to build shape, tighten up, and actually feel good going into summer.
 
-That's why I put together the Summer Cut Program:
+I put together an 8-week summer cut program for exactly that. It is $600 flat. You get a custom training plan built for a leaner, more toned look, glute-focused programming, nutrition coaching, weekly check-ins for all 8 weeks, and direct access to me throughout.
 
-──────────────────────────
-☀️ SUMMER CUT — $600 flat (8 weeks)
-──────────────────────────
-→ Custom training plan built for a lean, toned summer look
-→ Glute-focused programming (you came here for a reason 😉)
-→ Nutrition coaching — real food, no starving yourself
-→ Weekly check-ins for all 8 weeks
-→ Direct access to me throughout
+Vanessa's results came in one month. Eight focused weeks with a clear summer goal is a different thing entirely.
 
-Vanessa lost 6.5 inches off her waist in her first month. Eight focused weeks with a clear summer goal? That's a completely different body by June.
+I only have a small number of spots because I want to give everyone proper attention. Once they are filled that is it until fall.
 
-I'm only taking a small number of clients for this round. Once those spots are filled, that's it until fall.
+If you want in, everything is at {STAN}.
 
-Reply "SUMMER" and I'll get you started.{SIG}
-
-P.S. If summer timing doesn't work, my $150/mo Custom Fitness Plan is always open."""
+And if summer is not your focus right now, the $150 monthly plan is always open. What matters more to you at the moment, something to work toward for summer or building a longer term habit?{SIG}"""
         }
     # step == 5
     return {
-        'subject': 'last email from me (here\'s where things stand)',
+        'subject': 'last one from me',
         'body': f"""Hey {first},
 
-This is the last email I'll send you about coaching.
+This is the last email I will send you about coaching. I do not want to keep showing up in your inbox if it is not useful.
 
-If none of my previous emails landed — totally fine. Timing is everything. No hard feelings at all.
+If none of this has felt like the right fit, no hard feelings at all. Timing is everything.
 
-But if you've been reading along and haven't pulled the trigger yet, here's one last clear picture:
+But if you have been reading along and just have not taken a step yet, here is where things stand.
 
-☀️  Summer Cut — $600 (8 weeks)
-Focused program for a real summer transformation. Limited spots.
+The Summer Cut is $600 for 8 weeks. It is the focused option if you have a specific goal tied to summer.
 
-💪  Custom Fitness Plan — $150/mo
-Fully custom program built for your body. Most accessible way to work with me.
+The Custom Fitness Plan is $150 a month. It is the most accessible way to work with me on an ongoing basis.
 
-🥇  Premium 1:1 Coaching — $300/mo
-Full access, weekly check-ins, nutrition + training.
+The Premium 1:1 Coaching is $300 a month. It is the most hands-on option with weekly check-ins and full access.
 
-My clients Vanessa and Andrea are seeing results that genuinely surprise even them. I want that for more people.
+Everything is at {STAN} if any of it feels right.
 
-If you're ready, just reply with which option interests you and we'll go from there.
+If not, I post on Instagram every day at @mollylmangan and you are always welcome there.
 
-If not — genuinely no worries. I'm on Instagram daily (@mollylmangan) and you're always welcome there.
-
-Wishing you the best either way. 🤍{SIG}"""
+Thanks for reading along. I genuinely hope whatever you are working toward goes well.{SIG}"""
     }
 
 # ── Sequence engine ────────────────────────────────────────────────────────────
@@ -475,7 +439,7 @@ def admin_sync():
 
 # ── Run ────────────────────────────────────────────────────────────────────────
 if __name__ == '__main__':
-    print(f'\n💪 Molly\'s Fitness CRM → http://localhost:{PORT}')
+    print(f'\nMolly\'s Fitness CRM -> http://localhost:{PORT}')
     print(f'📧 Gmail: {"✅ Ready" if GMAIL_PASS else "⚠️  Add GMAIL_APP_PASSWORD to .env"}')
     print(f'👥 Leads: {len(read_json(LEADS_FILE))} loaded\n')
     app.run(host='0.0.0.0', port=PORT, debug=False)
