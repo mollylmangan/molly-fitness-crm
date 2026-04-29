@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Molly's Fitness CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --pink:       #e94560;
+  --pink-dark:  #c73450;
+  --pink-light: #fde8ec;
+  --navy:       #1a1a2e;
+  --navy-mid:   #16213e;
+  --purple:     #7c3aed;
+  --purple-light:#ede9fe;
+  --green:      #16a34a;
+  --green-light:#dcfce7;
+  --amber:      #d97706;
+  --amber-light:#fef3c7;
+  --blue:       #2563eb;
+  --blue-light: #dbeafe;
+  --gray:       #6b7280;
+  --gray-light: #f3f4f6;
+  --border:     #e5e7eb;
+  --white:      #ffffff;
+  --bg:         #f9fafb;
+  --text:       #111827;
+  --text-muted: #6b7280;
+  --shadow:     0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.12);
+  --radius:     12px;
+  --radius-sm:  8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { font-size: 16px; }
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 80px; }
+
+/* ── HEADER ───────────────────────────────────────────────────────────────── */
+.header {
+  background: var(--navy);
+  color: var(--white);
+  padding: 16px 20px 12px;
+  position: sticky; top: 0; z-index: 200;
+  box-shadow: var(--shadow-md);
+}
+.header-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.header-brand { display: flex; align-items: center; gap: 10px; }
+.header-brand .logo { font-size: 22px; }
+.header-brand h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+.header-brand p { font-size: 11px; opacity: 0.6; margin-top: 1px; }
+.email-badge {
+  font-size: 11px; font-weight: 600; padding: 4px 10px;
+  border-radius: 999px; white-space: nowrap;
+}
+.email-badge.ok  { background: rgba(22,163,74,0.2);  color: #86efac; }
+.email-badge.bad { background: rgba(233,69,96,0.2);  color: #fca5a5; }
+
+/* Stats row */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+.stat-pill {
+  background: rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 8px 10px;
+  text-align: center;
+}
+.stat-pill .num { font-size: 20px; font-weight: 800; line-height: 1; }
+.stat-pill .lbl { font-size: 10px; opacity: 0.6; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-pill.pink  .num { color: var(--pink); }
+.stat-pill.green .num { color: #86efac; }
+.stat-pill.amber .num { color: #fde68a; }
+.stat-pill.white .num { color: var(--white); }
+
+/* Goal bar */
+.goal-bar-wrap { margin-top: 10px; }
+.goal-bar-labels { display: flex; justify-content: space-between; font-size: 11px; opacity: 0.6; margin-bottom: 4px; }
+.goal-bar { background: rgba(255,255,255,0.12); border-radius: 999px; height: 6px; }
+.goal-bar-fill { background: var(--pink); height: 6px; border-radius: 999px; transition: width 0.6s ease; }
+
+/* ── MAIN ACTIONS ─────────────────────────────────────────────────────────── */
+.actions-bar {
+  padding: 14px 16px 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 16px; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  border: none; transition: all 0.15s ease; white-space: nowrap;
+  min-height: 44px;
+}
+.btn-primary { background: var(--pink); color: var(--white); }
+.btn-primary:hover { background: var(--pink-dark); }
+.btn-secondary { background: var(--white); color: var(--text); border: 1.5px solid var(--border); }
+.btn-secondary:hover { background: var(--gray-light); }
+.btn-green  { background: var(--green); color: var(--white); }
+.btn-green:hover { background: #15803d; }
+.btn-sm { padding: 7px 12px; font-size: 13px; min-height: 36px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-loading { position: relative; pointer-events: none; }
+.btn-loading::after {
+  content: '';
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%; animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+
+/* ── TABS ─────────────────────────────────────────────────────────────────── */
+.tabs-wrap {
+  padding: 12px 16px 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--white);
+  position: sticky; top: 116px; z-index: 100;
+}
+.tabs { display: flex; gap: 4px; }
+.tab {
+  padding: 8px 14px 10px; font-size: 14px; font-weight: 500;
+  color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent;
+  transition: all 0.15s; white-space: nowrap; border-radius: 0;
+  background: none; border-top: none; border-left: none; border-right: none;
+  min-height: 44px; display: flex; align-items: center; gap: 6px;
+}
+.tab.active { color: var(--pink); border-bottom-color: var(--pink); font-weight: 600; }
+.tab-count {
+  background: var(--pink-light); color: var(--pink);
+  font-size: 11px; font-weight: 700; padding: 2px 6px;
+  border-radius: 999px; line-height: 1.4;
+}
+.tab.active .tab-count { background: var(--pink); color: white; }
+
+/* ── CONTENT ──────────────────────────────────────────────────────────────── */
+.content { padding: 16px; max-width: 900px; margin: 0 auto; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── NOTICE BANNER ────────────────────────────────────────────────────────── */
+.notice {
+  background: var(--amber-light); border: 1px solid #fde68a;
+  border-radius: var(--radius-sm); padding: 12px 16px;
+  font-size: 13px; color: #92400e; margin-bottom: 16px;
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.notice .icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── TASK CARDS ───────────────────────────────────────────────────────────── */
+.task-list { display: flex; flex-direction: column; gap: 12px; }
+.task-card {
+  background: var(--white); border-radius: var(--radius);
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+  overflow: hidden;
+}
+.task-card-header {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 16px 12px; border-bottom: 1px solid var(--gray-light);
+}
+.step-badge {
+  background: var(--pink-light); color: var(--pink);
+  font-size: 11px; font-weight: 700; padding: 4px 8px;
+  border-radius: 6px; white-space: nowrap; flex-shrink: 0; margin-top: 2px;
+}
+.task-meta { flex: 1; min-width: 0; }
+.task-name { font-size: 15px; font-weight: 600; truncate: true; }
+.task-email { font-size: 12px; color: var(--text-muted); margin-top: 2px; word-break: break-all; }
+.source-badge {
+  font-size: 10px; font-weight: 600; padding: 2px 7px;
+  border-radius: 999px; flex-shrink: 0; margin-top: 4px; white-space: nowrap;
+}
+.source-stan    { background: #ede9fe; color: #6d28d9; }
+.source-shopify { background: #dcfce7; color: #15803d; }
+.source-both    { background: #dbeafe; color: #1d4ed8; }
+
+.task-subject {
+  padding: 10px 16px;
+  font-size: 14px; font-weight: 600; color: var(--text);
+  background: var(--gray-light); line-height: 1.4;
+}
+
+.task-body-wrap { padding: 12px 16px; }
+.task-body {
+  font-size: 13px; color: var(--text-muted); line-height: 1.7;
+  white-space: pre-wrap; word-break: break-word;
+  max-height: 120px; overflow: hidden; position: relative;
+  transition: max-height 0.3s ease;
+}
+.task-body.expanded { max-height: 2000px; }
+.task-body-fade {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 48px;
+  background: linear-gradient(transparent, white);
+  pointer-events: none; transition: opacity 0.3s;
+}
+.task-body.expanded + .task-body-fade { opacity: 0; }
+.expand-btn {
+  font-size: 12px; color: var(--pink); cursor: pointer;
+  margin-top: 6px; display: inline-block; font-weight: 500;
+  background: none; border: none; padding: 0;
+}
+
+.task-actions {
+  padding: 10px 16px 14px;
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+
+/* ── LEADS TABLE ──────────────────────────────────────────────────────────── */
+.search-bar {
+  display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;
+}
+.search-input {
+  flex: 1; min-width: 200px;
+  padding: 10px 14px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 14px; font-family: inherit;
+  background: var(--white); color: var(--text);
+  outline: none; transition: border-color 0.15s;
+}
+.search-input:focus { border-color: var(--pink); }
+.filter-select {
+  padding: 10px 14px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 14px; font-family: inherit;
+  background: var(--white); color: var(--text); cursor: pointer;
+  outline: none;
+}
+
+.leads-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.leads-table {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+  background: var(--white); border-radius: var(--radius);
+  overflow: hidden; box-shadow: var(--shadow);
+}
+.leads-table th {
+  background: var(--navy); color: rgba(255,255,255,0.8);
+  padding: 11px 14px; text-align: left; font-size: 11px;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.leads-table td {
+  padding: 11px 14px; border-bottom: 1px solid var(--gray-light);
+  vertical-align: middle; max-width: 200px;
+}
+.leads-table tr:last-child td { border-bottom: none; }
+.leads-table tr:hover td { background: var(--gray-light); }
+.leads-table .name-cell { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+.leads-table .email-cell { color: var(--text-muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.badge {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 999px; white-space: nowrap;
+}
+.badge-active   { background: var(--green-light); color: var(--green); }
+.badge-complete { background: var(--blue-light);  color: var(--blue); }
+.badge-converted{ background: var(--pink-light);  color: var(--pink); }
+.badge-skipped  { background: var(--gray-light);  color: var(--gray); }
+
+.pagination {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0; font-size: 13px; color: var(--text-muted);
+}
+
+/* ── EMPTY STATE ──────────────────────────────────────────────────────────── */
+.empty {
+  text-align: center; padding: 48px 24px;
+  color: var(--text-muted); font-size: 15px;
+}
+.empty .icon { font-size: 40px; margin-bottom: 12px; }
+.empty p { margin-top: 8px; font-size: 13px; }
+
+/* ── SEQUENCE VISUAL ──────────────────────────────────────────────────────── */
+.sequence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+.seq-card {
+  background: var(--white); border-radius: var(--radius);
+  border: 1px solid var(--border); padding: 16px;
+  box-shadow: var(--shadow);
+}
+.seq-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.seq-num {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--pink); color: white;
+  font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.seq-day { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+.seq-subject { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; }
+.seq-preview { font-size: 12px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
+.seq-count { margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--pink); }
+
+/* ── TOAST ────────────────────────────────────────────────────────────────── */
+.toast-wrap {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+  z-index: 999; display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none; width: min(360px, 90vw);
+}
+.toast {
+  background: var(--navy); color: white;
+  padding: 12px 16px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500;
+  box-shadow: var(--shadow-md);
+  animation: slideUp 0.25s ease;
+  display: flex; align-items: center; gap: 8px;
+}
+.toast.success { background: var(--green); }
+.toast.error   { background: #dc2626; }
+@keyframes slideUp { from { opacity:0; transform:translateY(16px); } }
+
+/* ── BOTTOM NAV (mobile) ──────────────────────────────────────────────────── */
+.bottom-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 150;
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+}
+.bottom-nav-items { display: flex; justify-content: space-around; }
+.bottom-nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 4px 16px; cursor: pointer; border: none; background: none;
+  color: var(--text-muted); font-size: 10px; font-weight: 500;
+  min-width: 64px; min-height: 44px; justify-content: center;
+  transition: color 0.15s;
+}
+.bottom-nav-item .nav-icon { font-size: 20px; }
+.bottom-nav-item.active { color: var(--pink); }
+.bottom-nav-item .nav-badge {
+  position: absolute; top: 0; right: 4px;
+  background: var(--pink); color: white;
+  font-size: 9px; font-weight: 700; padding: 1px 5px;
+  border-radius: 999px; min-width: 16px; text-align: center;
+}
+.bottom-nav-item { position: relative; }
+
+/* ── RESPONSIVE ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  body { padding-bottom: 80px; }
+  .bottom-nav { display: block; }
+  .tabs-wrap { display: none; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .header-brand h1 { font-size: 15px; }
+  .actions-bar { padding: 12px 12px 0; }
+  .content { padding: 12px; }
+  .task-actions { gap: 6px; }
+  .task-actions .btn { flex: 1; justify-content: center; }
+  .btn { font-size: 13px; padding: 10px 12px; }
+  .leads-table { font-size: 12px; }
+  .leads-table th, .leads-table td { padding: 9px 10px; }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .stats-row { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  body { padding-bottom: 0; }
+}
+
+/* ── SKELETON LOADER ──────────────────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+.skeleton-card {
+  background: var(--white); border-radius: var(--radius);
+  border: 1px solid var(--border); padding: 16px; margin-bottom: 12px;
+}
+
+/* ── MODAL ────────────────────────────────────────────────────────────────── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.5); align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--white); border-radius: var(--radius);
+  padding: 24px; width: min(480px, 100%);
+  box-shadow: var(--shadow-md); max-height: 90vh; overflow-y: auto;
+}
+.modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: var(--text-muted); }
+.form-group input, .form-group select {
+  width: 100%; padding: 10px 14px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 14px; font-family: inherit; outline: none;
+  transition: border-color 0.15s;
+}
+.form-group input:focus, .form-group select:focus { border-color: var(--pink); }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ────────────────────────────────────────────────────────────── -->
+<header class="header">
+  <div class="header-top">
+    <div class="header-brand">
+      <span class="logo">💪</span>
+      <div>
+        <h1>Molly's Fitness CRM</h1>
+        <p>Lead Management & Email Automation</p>
+      </div>
+    </div>
+    <span class="email-badge bad" id="emailBadge">⚠ Email not set</span>
+  </div>
+  <div class="stats-row">
+    <div class="stat-pill white"><div class="num" id="statTotal">—</div><div class="lbl">Total Leads</div></div>
+    <div class="stat-pill amber"><div class="num" id="statPending">—</div><div class="lbl">In Queue</div></div>
+    <div class="stat-pill pink"><div class="num" id="statSent">—</div><div class="lbl">Emails Sent</div></div>
+    <div class="stat-pill green"><div class="num" id="statConverted">—</div><div class="lbl">Clients</div></div>
+  </div>
+  <div class="goal-bar-wrap">
+    <div class="goal-bar-labels">
+      <span id="goalLabel">0 / 20 clients</span>
+      <span id="goalPct">0%</span>
+    </div>
+    <div class="goal-bar"><div class="goal-bar-fill" id="goalFill" style="width:0%"></div></div>
+  </div>
+</header>
+
+<!-- ── ACTIONS ────────────────────────────────────────────────────────────── -->
+<div class="actions-bar">
+  <button class="btn btn-primary" id="generateBtn" onclick="generateTasks()">
+    ⚡ Generate Today's Emails
+  </button>
+  <button class="btn btn-green" id="approveAllBtn" onclick="approveAll()">
+    ✉ Send All
+  </button>
+  <button class="btn btn-secondary btn-sm" onclick="openSettings()">
+    ⚙ Settings
+  </button>
+</div>
+
+<!-- ── TABS (desktop/tablet) ──────────────────────────────────────────────── -->
+<div class="tabs-wrap" id="tabsWrap">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('queue')" id="tab-queue">
+      📬 Queue <span class="tab-count" id="queueCount">0</span>
+    </button>
+    <button class="tab" onclick="switchTab('leads')" id="tab-leads">
+      👥 Leads
+    </button>
+    <button class="tab" onclick="switchTab('sequence')" id="tab-sequence">
+      📋 Sequence
+    </button>
+  </div>
+</div>
+
+<!-- ── CONTENT ────────────────────────────────────────────────────────────── -->
+<div class="content">
+
+  <!-- QUEUE TAB -->
+  <div class="tab-panel active" id="panel-queue">
+    <div id="emailNotice" class="notice" style="display:none">
+      <span class="icon">⚠️</span>
+      <span>Gmail not configured — emails will be queued but not sent. Add your <strong>GMAIL_APP_PASSWORD</strong> to the <code>.env</code> file and restart.</span>
+    </div>
+    <div id="taskList" class="task-list">
+      <div class="skeleton-card"><div class="skeleton" style="height:20px;width:60%;margin-bottom:10px"></div><div class="skeleton" style="height:14px;width:90%"></div></div>
+      <div class="skeleton-card"><div class="skeleton" style="height:20px;width:50%;margin-bottom:10px"></div><div class="skeleton" style="height:14px;width:85%"></div></div>
+    </div>
+  </div>
+
+  <!-- LEADS TAB -->
+  <div class="tab-panel" id="panel-leads">
+    <div class="search-bar">
+      <input class="search-input" type="text" id="leadSearch" placeholder="🔍  Search by name or email…" oninput="debouncedLeadSearch()">
+      <select class="filter-select" id="leadStatus" onchange="loadLeads()">
+        <option value="">All statuses</option>
+        <option value="active">Active</option>
+        <option value="sequence_complete">Sequence complete</option>
+        <option value="converted">Converted</option>
+      </select>
+      <select class="filter-select" id="leadSource" onchange="loadLeads()">
+        <option value="">All sources</option>
+        <option value="Stan.Store">Stan.Store</option>
+        <option value="Shopify">Shopify</option>
+        <option value="Stan.Store + Shopify">Both</option>
+      </select>
+    </div>
+    <div class="leads-table-wrap">
+      <table class="leads-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Source</th>
+            <th>Country</th>
+            <th>Step</th>
+            <th>Status</th>
+            <th>Last Emailed</th>
+          </tr>
+        </thead>
+        <tbody id="leadsBody">
+          <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted)">Loading leads…</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+  <!-- SEQUENCE TAB -->
+  <div class="tab-panel" id="panel-sequence">
+    <div class="sequence-grid" id="sequenceGrid">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<!-- ── BOTTOM NAV (mobile) ────────────────────────────────────────────────── -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-items">
+    <button class="bottom-nav-item active" onclick="switchTab('queue')" id="nav-queue">
+      <span class="nav-icon">📬</span>
+      <span>Queue</span>
+      <span class="nav-badge" id="navQueueBadge" style="display:none">0</span>
+    </button>
+    <button class="bottom-nav-item" onclick="switchTab('leads')" id="nav-leads">
+      <span class="nav-icon">👥</span>
+      <span>Leads</span>
+    </button>
+    <button class="bottom-nav-item" onclick="switchTab('sequence')" id="nav-sequence">
+      <span class="nav-icon">📋</span>
+      <span>Sequence</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ── TOAST ──────────────────────────────────────────────────────────────── -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ── SETTINGS MODAL ─────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <h3>⚙ Settings</h3>
+    <div class="form-group">
+      <label>Coach Name</label>
+      <input type="text" id="cfgCoachName" placeholder="Molly Mangan">
+    </div>
+    <div class="form-group">
+      <label>Instagram Handle</label>
+      <input type="text" id="cfgInstagram" placeholder="@mollylmangan">
+    </div>
+    <div class="form-group">
+      <label>Free Guide Name</label>
+      <input type="text" id="cfgGuide" placeholder="How to Build Glutes That Actually Grow">
+    </div>
+    <div class="form-group">
+      <label>Client Goal</label>
+      <input type="number" id="cfgGoal" value="20" min="1">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+let currentTab  = 'queue';
+let leadsPage   = 1;
+let leadsTotal  = 0;
+let searchTimer = null;
+
+const SEQUENCE_INFO = [
+  { day: 0,  subject: 'the thing nobody tells you after downloading a glute guide 👀', preview: 'Mind-muscle connection tip + bonus activation drill' },
+  { day: 3,  subject: '6.5 inches off her waist. 30 days. (Vanessa\'s story)',         preview: 'Real client results — Vanessa + Andrea' },
+  { day: 6,  subject: 'the real reason your glutes aren\'t growing',                   preview: '5 common mistakes + soft mention of $150/mo plan' },
+  { day: 9,  subject: 'here\'s exactly what working with me looks like',               preview: 'Direct offer: $150/mo Custom Plan + $300/mo Premium' },
+  { day: 13, subject: 'summer is X weeks away. here\'s what I\'d do.',                preview: '$600 Summer Cut program pitch with urgency' },
+  { day: 17, subject: 'last email from me (here\'s where things stand)',               preview: 'Final call — all three offers, no pressure close' },
+];
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadStats();
+  loadQueue();
+  buildSequenceGrid();
+  setInterval(loadStats, 30000);
+});
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const s = await api('/api/stats');
+    document.getElementById('statTotal').textContent    = fmt(s.totalLeads);
+    document.getElementById('statPending').textContent  = fmt(s.tasksPending);
+    document.getElementById('statSent').textContent     = fmt(s.tasksSent);
+    document.getElementById('statConverted').textContent= fmt(s.converted);
+    document.getElementById('goalLabel').textContent    = `${s.converted} / ${s.clientGoal} clients`;
+    document.getElementById('goalPct').textContent      = `${s.pctToGoal}%`;
+    document.getElementById('goalFill').style.width     = `${Math.min(100, s.pctToGoal)}%`;
+    document.getElementById('queueCount').textContent   = s.tasksPending;
+    const nb = document.getElementById('navQueueBadge');
+    if (s.tasksPending > 0) { nb.textContent = s.tasksPending; nb.style.display = 'block'; }
+    else { nb.style.display = 'none'; }
+    const badge = document.getElementById('emailBadge');
+    if (s.emailConfigured) {
+      badge.textContent = '✉ Email ready';
+      badge.className   = 'email-badge ok';
+      document.getElementById('emailNotice').style.display = 'none';
+    } else {
+      badge.textContent = '⚠ Email not set';
+      badge.className   = 'email-badge bad';
+      document.getElementById('emailNotice').style.display = 'flex';
+    }
+  } catch(e) { console.error('Stats error', e); }
+}
+
+// ── Task Queue ────────────────────────────────────────────────────────────────
+async function loadQueue() {
+  const list = document.getElementById('taskList');
+  try {
+    const tasks = await api('/api/tasks?status=pending');
+    if (!tasks.length) {
+      list.innerHTML = `<div class="empty"><div class="icon">🎉</div><strong>Queue is empty!</strong><p>Hit "Generate Today's Emails" to load the next batch.</p></div>`;
+      return;
+    }
+    list.innerHTML = tasks.map(t => taskCard(t)).join('');
+  } catch(e) {
+    list.innerHTML = `<div class="empty"><div class="icon">❌</div>Failed to load tasks</div>`;
+  }
+}
+
+function taskCard(t) {
+  const stepLabel = `Email ${(t.sequenceStep ?? 0) + 1} / 6`;
+  const src = (t.recipientSource || '').toLowerCase();
+  const srcClass = src.includes('both') ? 'source-both'
+                 : src.includes('shopify') ? 'source-shopify' : 'source-stan';
+  const srcLabel = src.includes('both') ? 'Stan + Shopify'
+                 : src.includes('shopify') ? 'Shopify' : 'Stan.Store';
+  const bodyId = `body-${t.id}`;
+  return `
+<div class="task-card" id="card-${t.id}">
+  <div class="task-card-header">
+    <span class="step-badge">${stepLabel}</span>
+    <div class="task-meta">
+      <div class="task-name">${esc(t.recipientName || 'Unknown')}</div>
+      <div class="task-email">${esc(t.recipientEmail || '')}</div>
+    </div>
+    <span class="source-badge ${srcClass}">${srcLabel}</span>
+  </div>
+  <div class="task-subject">${esc(t.subject)}</div>
+  <div class="task-body-wrap">
+    <div class="task-body" id="${bodyId}">${esc(t.script)}</div>
+    <div class="task-body-fade"></div>
+    <button class="expand-btn" onclick="toggleBody('${bodyId}', this)">Show full email ↓</button>
+  </div>
+  <div class="task-actions">
+    <button class="btn btn-green btn-sm" onclick="approveTask('${t.id}', this)">✓ Approve & Send</button>
+    <button class="btn btn-secondary btn-sm" onclick="skipTask('${t.id}', this)">✕ Skip</button>
+  </div>
+</div>`;
+}
+
+function toggleBody(id, btn) {
+  const el = document.getElementById(id);
+  el.classList.toggle('expanded');
+  btn.textContent = el.classList.contains('expanded') ? 'Show less ↑' : 'Show full email ↓';
+}
+
+async function approveTask(id, btn) {
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    const res = await api(`/api/tasks/${id}/approve`, 'POST');
+    if (res.error) { toast(res.error, 'error'); btn.disabled = false; btn.textContent = '✓ Approve & Send'; return; }
+    const card = document.getElementById(`card-${id}`);
+    card.style.opacity = '0'; card.style.transition = 'opacity 0.3s';
+    setTimeout(() => { card.remove(); checkEmpty(); }, 300);
+    toast('✅ Email sent!', 'success');
+    loadStats();
+  } catch(e) { toast('Failed to send', 'error'); btn.disabled = false; btn.textContent = '✓ Approve & Send'; }
+}
+
+async function skipTask(id, btn) {
+  btn.disabled = true;
+  try {
+    await api(`/api/tasks/${id}/skip`, 'POST');
+    const card = document.getElementById(`card-${id}`);
+    card.style.opacity = '0.3';
+    setTimeout(() => { card.remove(); checkEmpty(); }, 200);
+    toast('Skipped', 'success');
+    loadStats();
+  } catch(e) { toast('Error', 'error'); btn.disabled = false; }
+}
+
+function checkEmpty() {
+  const list = document.getElementById('taskList');
+  if (!list.querySelector('.task-card')) {
+    list.innerHTML = `<div class="empty"><div class="icon">🎉</div><strong>All done!</strong><p>Queue is empty. Come back tomorrow for the next batch.</p></div>`;
+  }
+}
+
+async function generateTasks() {
+  const btn = document.getElementById('generateBtn');
+  btn.classList.add('btn-loading'); btn.disabled = true;
+  btn.textContent = 'Generating…';
+  try {
+    const res = await api('/api/generate', 'POST');
+    if (res.created > 0) {
+      toast(`⚡ ${res.created} new email${res.created !== 1 ? 's' : ''} queued!`, 'success');
+      loadQueue(); loadStats();
+    } else {
+      toast('No new emails due today — check back tomorrow!', 'default');
+    }
+  } catch(e) { toast('Generation failed', 'error'); }
+  finally { btn.classList.remove('btn-loading'); btn.disabled = false; btn.textContent = '⚡ Generate Today\'s Emails'; }
+}
+
+async function approveAll() {
+  const btn = document.getElementById('approveAllBtn');
+  const list = document.getElementById('taskList');
+  const count = list.querySelectorAll('.task-card').length;
+  if (!count) { toast('No pending tasks in queue', 'default'); return; }
+  if (!confirm(`Send all ${count} pending emails now?`)) return;
+  btn.classList.add('btn-loading'); btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    const res = await api('/api/tasks/approve-all', 'POST');
+    toast(`✅ ${res.sent} sent${res.errors ? `, ${res.errors} failed` : ''}`, res.errors ? 'error' : 'success');
+    loadQueue(); loadStats();
+  } catch(e) { toast('Batch send failed', 'error'); }
+  finally { btn.classList.remove('btn-loading'); btn.disabled = false; btn.textContent = '✉ Send All'; }
+}
+
+// ── Leads ─────────────────────────────────────────────────────────────────────
+async function loadLeads() {
+  const search = document.getElementById('leadSearch').value;
+  const status = document.getElementById('leadStatus').value;
+  const source = document.getElementById('leadSource').value;
+  const tbody  = document.getElementById('leadsBody');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted)">Loading…</td></tr>';
+
+  const params = new URLSearchParams({ page: leadsPage, limit: 50 });
+  if (search) params.set('search', search);
+  if (status) params.set('status', status);
+  if (source) params.set('source', source);
+
+  try {
+    const res = await api(`/api/leads?${params}`);
+    leadsTotal = res.total;
+    if (!res.leads.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted)">No leads found</td></tr>';
+      document.getElementById('pagination').innerHTML = '';
+      return;
+    }
+    tbody.innerHTML = res.leads.map(l => {
+      const src = (l.source || '').toLowerCase();
+      const srcClass = src.includes('both') ? 'source-both'
+                     : src.includes('shopify') ? 'source-shopify' : 'source-stan';
+      const statusBadge = {
+        active: '<span class="badge badge-active">Active</span>',
+        sequence_complete: '<span class="badge badge-complete">Complete</span>',
+        converted: '<span class="badge badge-converted">Converted</span>',
+      }[l.status] || `<span class="badge badge-skipped">${l.status}</span>`;
+      const lastEmailed = l.lastEmailedAt
+        ? new Date(l.lastEmailedAt).toLocaleDateString('en-US', {month:'short', day:'numeric'})
+        : '—';
+      return `<tr>
+        <td class="name-cell">${esc(l.name || '—')}</td>
+        <td class="email-cell">${esc(l.email || '—')}</td>
+        <td><span class="badge ${srcClass}">${esc(l.source || '—')}</span></td>
+        <td>${esc(l.country || '—')}</td>
+        <td>Email ${Math.min((l.sequenceStep ?? 0) + 1, 6)} / 6</td>
+        <td>${statusBadge}</td>
+        <td>${lastEmailed}</td>
+      </tr>`;
+    }).join('');
+
+    const totalPages = Math.ceil(leadsTotal / 50);
+    document.getElementById('pagination').innerHTML = `
+      <span>${leadsTotal} leads total</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-secondary btn-sm" onclick="changePage(-1)" ${leadsPage<=1?'disabled':''}>← Prev</button>
+        <span>Page ${leadsPage} / ${totalPages}</span>
+        <button class="btn btn-secondary btn-sm" onclick="changePage(1)" ${leadsPage>=totalPages?'disabled':''}>Next →</button>
+      </div>`;
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:red">Error loading leads</td></tr>';
+  }
+}
+
+function changePage(dir) { leadsPage = Math.max(1, leadsPage + dir); loadLeads(); }
+function debouncedLeadSearch() {
+  leadsPage = 1;
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(loadLeads, 350);
+}
+
+// ── Sequence Grid ─────────────────────────────────────────────────────────────
+function buildSequenceGrid() {
+  const grid = document.getElementById('sequenceGrid');
+  grid.innerHTML = SEQUENCE_INFO.map((e, i) => `
+    <div class="seq-card">
+      <div class="seq-card-header">
+        <div class="seq-num">${i + 1}</div>
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted)">Day ${e.day}</div>
+          <div style="font-size:11px;color:var(--text-muted)">Email ${i+1} of 6</div>
+        </div>
+      </div>
+      <div class="seq-subject">${esc(e.subject)}</div>
+      <div class="seq-preview">${esc(e.preview)}</div>
+      <div class="seq-count" id="seqCount${i}">— leads at this step</div>
+    </div>
+  `).join('');
+  loadSequenceStats();
+}
+
+async function loadSequenceStats() {
+  try {
+    const s = await api('/api/stats');
+    SEQUENCE_INFO.forEach((_, i) => {
+      const el = document.getElementById(`seqCount${i}`);
+      if (el) el.textContent = `${s.byStep?.[String(i)] ?? 0} leads at this step`;
+    });
+  } catch(e) {}
+}
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+async function openSettings() {
+  try {
+    const cfg = await api('/api/config');
+    document.getElementById('cfgCoachName').value  = cfg.coachName || '';
+    document.getElementById('cfgInstagram').value  = cfg.instagram || '';
+    document.getElementById('cfgGuide').value      = cfg.guideName || '';
+    document.getElementById('cfgGoal').value       = cfg.clientGoal || 20;
+  } catch(e) {}
+  document.getElementById('settingsModal').classList.add('open');
+}
+
+function closeSettings() { document.getElementById('settingsModal').classList.remove('open'); }
+
+async function saveSettings() {
+  const body = {
+    coachName:   document.getElementById('cfgCoachName').value,
+    instagram:   document.getElementById('cfgInstagram').value,
+    guideName:   document.getElementById('cfgGuide').value,
+    clientGoal:  parseInt(document.getElementById('cfgGoal').value) || 20,
+  };
+  try {
+    await api('/api/config', 'PUT', body);
+    toast('Settings saved ✓', 'success');
+    closeSettings(); loadStats();
+  } catch(e) { toast('Failed to save', 'error'); }
+}
+
+// Close modal on overlay click
+document.getElementById('settingsModal').addEventListener('click', function(e) {
+  if (e.target === this) closeSettings();
+});
+
+// ── Tab switching ──────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.bottom-nav-item').forEach(t => t.classList.remove('active'));
+  document.getElementById(`panel-${tab}`).classList.add('active');
+  const desktopTab = document.getElementById(`tab-${tab}`);
+  if (desktopTab) desktopTab.classList.add('active');
+  const navItem = document.getElementById(`nav-${tab}`);
+  if (navItem) navItem.classList.add('active');
+  if (tab === 'leads' && !document.getElementById('leadsBody').querySelector('tr td:not([colspan])')) loadLeads();
+  if (tab === 'sequence') loadSequenceStats();
+}
+
+// ── Utilities ──────────────────────────────────────────────────────────────────
+async function api(url, method = 'GET', body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const res  = await fetch(url, opts);
+  return res.json();
+}
+
+function esc(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function fmt(n) { return Number(n).toLocaleString(); }
+
+function toast(msg, type = 'default') {
+  const wrap = document.getElementById('toastWrap');
+  const el   = document.createElement('div');
+  el.className = `toast${type !== 'default' ? ' ' + type : ''}`;
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+</script>
+</body>
+</html>
