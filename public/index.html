@@ -107,6 +107,8 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 .btn-secondary:hover { background: var(--gray-light); }
 .btn-green  { background: var(--green); color: var(--white); }
 .btn-green:hover { background: #15803d; }
+.btn-danger { background: #dc2626; color: var(--white); border: none; }
+.btn-danger:hover { background: #b91c1c; }
 .btn-sm { padding: 7px 12px; font-size: 13px; min-height: 36px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-loading { position: relative; pointer-events: none; }
@@ -444,6 +446,9 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
   <button class="btn btn-green" id="approveAllBtn" onclick="approveAll()">
     ✉ Send All
   </button>
+  <button class="btn btn-danger btn-sm" id="clearQueueBtn" onclick="clearQueue()">
+    Clear Queue
+  </button>
   <button class="btn btn-secondary btn-sm" onclick="openSettings()">
     ⚙ Settings
   </button>
@@ -752,6 +757,25 @@ async function approveAll() {
     toast('Send failed — check your Gmail password in settings', 'error');
   } finally {
     btn.classList.remove('btn-loading'); btn.disabled = false; btn.textContent = '✉ Send All';
+  }
+}
+
+async function clearQueue() {
+  const list = document.getElementById('taskList');
+  const count = list.querySelectorAll('.task-card').length;
+  if (!count) { toast('Queue is already empty', 'default'); return; }
+  if (!confirm(`Delete all ${count} pending emails from the queue? This cannot be undone.`)) return;
+  const btn = document.getElementById('clearQueueBtn');
+  btn.disabled = true; btn.textContent = 'Clearing…';
+  try {
+    const res = await fetch('/api/tasks/clear', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+    const data = await res.json();
+    toast(`Queue cleared — ${data.removed} tasks removed`, 'success');
+    loadQueue(); loadStats();
+  } catch(e) {
+    toast('Could not clear queue', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Clear Queue';
   }
 }
 

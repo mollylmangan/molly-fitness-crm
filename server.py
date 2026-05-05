@@ -418,6 +418,15 @@ def approve_all():
         threading.Thread(target=_do_send_all, args=(queued_ids,), daemon=True).start()
     return jsonify({'queued': len(queued_ids)})
 
+# ── Clear queue ────────────────────────────────────────────────────────────────
+@app.route('/api/tasks/clear', methods=['POST'])
+def clear_queue():
+    tasks = read_json(TASKS_FILE)
+    before = len(tasks)
+    tasks = [t for t in tasks if t.get('status') not in ('pending', 'queued')]
+    write_json(TASKS_FILE, tasks)
+    return jsonify({'removed': before - len(tasks)})
+
 # ── Generate ───────────────────────────────────────────────────────────────────
 @app.route('/api/generate', methods=['POST'])
 def generate():
