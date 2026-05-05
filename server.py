@@ -105,20 +105,18 @@ SEQUENCE_DAYS = [0, 3, 6, 9, 13, 17]
 def _email(step, first):
     if step == 0:
         return {
-            'subject': 'quick thing about the glute guide',
+            'subject': 'quick question about the guide',
             'body': f"""Hey {first},
 
-Thanks for downloading the guide. I hope it gave you something useful to work with.
+Thanks for downloading. I hope you have had a chance to look through it.
 
-One thing I want to add that did not make it into the guide is how much intensity actually matters, and how most people get it wrong in both directions.
+Two things in the guide that I think most people skim but that matter more than anything else:
 
-A lot of people either coast through their workouts without really pushing, or they go so hard that their form breaks down and they end up working everything except the muscles they are trying to target. The sweet spot is somewhere in between, and RPE is the easiest way to find it. RPE stands for rate of perceived exertion. On a scale of 1 to 10, most of your working sets should land around a 7 or 8. That means you could do 2 or 3 more reps if you had to, but you are genuinely working. Not just going through the motions.
+The RPE section. The guide explains it but the honest version is this: if you could do 5 more reps when you finish a set, you are not working hard enough for your glutes to grow. Staying 1 to 3 reps from failure is the zone where real growth happens. It is uncomfortable. That is the point.
 
-The other piece is form that actually fits your body. Glute exercises are not one size fits all. Hip width, femur length, and how you are built all change what a good hip thrust or squat looks like for you. If a standard cue does not feel right, it might not be wrong technique. It might just be the wrong technique for your anatomy. A wider stance, toes turned out slightly, or a different foot position on the platform can completely change what you feel.
+The progression section. The weight needs to go up over time. Not every session, but consistently over weeks. I see a lot of women who are incredibly consistent and still not making progress simply because they have been lifting the same weight for months. Consistency without progression is maintenance, not growth.
 
-And underneath all of it is progressive overload. You have to be doing more over time, whether that is more weight, more reps, or less rest. If you are training consistently but the numbers are not moving, that is usually why results have stalled.
-
-I would love to hear how the guide landed for you. Was there anything that clicked, anything that felt off, or anything you wished it covered more?
+I put a lot of work into this guide and I genuinely want to know if it is landing. Was there anything that clicked right away? Anything confusing, or anything you want me to go deeper on?
 
 Reply and let me know. I read every one.{SIG}"""
         }
