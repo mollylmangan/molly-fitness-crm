@@ -449,6 +449,9 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
   <button class="btn btn-danger btn-sm" id="clearQueueBtn" onclick="clearQueue()">
     Clear Queue
   </button>
+  <button class="btn btn-secondary btn-sm" id="testEmailBtn" onclick="sendTestEmail()">
+    Test Email
+  </button>
   <button class="btn btn-secondary btn-sm" onclick="openSettings()">
     ⚙ Settings
   </button>
@@ -757,6 +760,21 @@ async function approveAll() {
     toast('Send failed — check your Gmail password in settings', 'error');
   } finally {
     btn.classList.remove('btn-loading'); btn.disabled = false; btn.textContent = '✉ Send All';
+  }
+}
+
+async function sendTestEmail() {
+  const btn = document.getElementById('testEmailBtn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    const res = await fetch('/api/test-email', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed');
+    toast('Test email sent to ' + data.to, 'success');
+  } catch(e) {
+    toast('Test failed: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Test Email';
   }
 }
 

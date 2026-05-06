@@ -418,6 +418,21 @@ def approve_all():
         threading.Thread(target=_do_send_all, args=(queued_ids,), daemon=True).start()
     return jsonify({'queued': len(queued_ids)})
 
+# ── Test email ─────────────────────────────────────────────────────────────────
+@app.route('/api/test-email', methods=['POST'])
+def test_email():
+    if not GMAIL_PASS:
+        return jsonify({'error': 'GMAIL_APP_PASSWORD not set'}), 500
+    try:
+        send_email(
+            GMAIL_USER,
+            'CRM test email — its working',
+            f'This is a test from your Molly Fitness CRM.\n\nGmail is connected and emails are sending correctly.\n\nMolly'
+        )
+        return jsonify({'ok': True, 'to': GMAIL_USER})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # ── Clear queue ────────────────────────────────────────────────────────────────
 @app.route('/api/tasks/clear', methods=['POST'])
 def clear_queue():
