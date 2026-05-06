@@ -435,7 +435,9 @@ def test_email():
         )
         return jsonify({'ok': True, 'to': GMAIL_USER})
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        # Include password length to help diagnose credential issues (not the value itself)
+        debug = f'Error: {e} | user={GMAIL_USER} | pass_len={len(GMAIL_PASS)} | pass_chars={len(GMAIL_PASS.replace(" ",""))}'
+        return jsonify({'error': debug}), 500
 
 # ── Clear queue ────────────────────────────────────────────────────────────────
 @app.route('/api/tasks/clear', methods=['POST'])
