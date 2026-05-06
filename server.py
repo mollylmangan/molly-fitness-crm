@@ -29,9 +29,10 @@ TASKS_FILE  = os.path.join(DATA_DIR, 'tasks.json')
 CONFIG_FILE = os.path.join(DATA_DIR, 'config.json')
 PORT        = int(os.environ.get('PORT', 3001))
 
-GMAIL_USER  = os.environ.get('GMAIL_USER', 'mollylmangan@gmail.com')
-GMAIL_PASS  = os.environ.get('GMAIL_APP_PASSWORD', '').replace(' ', '')
-ADMIN_KEY   = os.environ.get('ADMIN_KEY', '')
+GMAIL_USER    = os.environ.get('GMAIL_USER', 'mollylmangan@gmail.com')
+GMAIL_PASS    = os.environ.get('GMAIL_APP_PASSWORD', '').replace(' ', '')
+SENDGRID_KEY  = os.environ.get('SENDGRID_API_KEY', '')
+ADMIN_KEY     = os.environ.get('ADMIN_KEY', '')
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -65,39 +66,43 @@ def get_first_name(full_name):
     return first if len(first) >= 2 and first.replace("'", '').isalpha() else 'there'
 
 # ── Gmail ──────────────────────────────────────────────────────────────────────
-def _build_msg(to_addr, subject, body):
-    msg = MIMEMultipart()
-    msg['From']    = f'"Molly Mangan" <{GMAIL_USER}>'
-    msg['To']      = to_addr
-    msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'plain'))
-    return msg
+import urllib.request as _urllib
 
-def _smtp_connection(timeout=30):
-    """Return an authenticated SMTP_SSL connection on port 465."""
-    s = smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=timeout)
-    s.login(GMAIL_USER, GMAIL_PASS)
-    return s
+def _sg_send(to_addr, subject, body):
+    """Send one email via SendGrid HTTPS API (no SMTP, not blocked by Railway)."""
+    if not SENDGRID_KEY:
+        raise ValueError('SENDGRID_API_KEY not configured')
+    payload = json.dumps({
+        'personalizations': [{'to': [{'email': to_addr}]}],
+        'from': {'email': GMAIL_USER, 'name': 'Molly Mangan'},
+        'subject': subject,
+        'content': [{'type': 'text/plain', 'value': body}]
+    }).encode()
+    req = _urllib.Request(
+        'https://api.sendgrid.com/v3/mail/send',
+        data=payload,
+        headers={
+            'Authorization': f'Bearer {SENDGRID_KEY}',
+            'Content-Type': 'application/json'
+        },
+        method='POST'
+    )
+    with _urllib.urlopen(req, timeout=15) as r:
+        if r.status not in (200, 202):
+            raise ValueError(f'SendGrid error {r.status}')
 
 def send_email(to_addr, subject, body):
-    if not GMAIL_PASS:
-        raise ValueError('GMAIL_APP_PASSWORD not configured')
-    with _smtp_connection(timeout=15) as s:
-        s.sendmail(GMAIL_USER, [to_addr], _build_msg(to_addr, subject, body).as_string())
+    _sg_send(to_addr, subject, body)
 
 def send_email_batch(messages):
-    """Send multiple (to_addr, subject, body) tuples over a single SMTP connection."""
-    if not GMAIL_PASS:
-        raise ValueError('GMAIL_APP_PASSWORD not configured')
-    with _smtp_connection(timeout=30) as s:
-        results = []
-        for to_addr, subject, body in messages:
-            try:
-                s.sendmail(GMAIL_USER, [to_addr], _build_msg(to_addr, subject, body).as_string())
-                results.append((to_addr, True, None))
-            except Exception as e:
-                results.append((to_addr, False, str(e)))
-        return results
+    results = []
+    for to_addr, subject, body in messages:
+        try:
+            _sg_send(to_addr, subject, body)
+            results.append((to_addr, True, None))
+        except Exception as e:
+            results.append((to_addr, False, str(e)))
+    return results
 
 # ── Email sequence templates ───────────────────────────────────────────────────
 SIG = '\nMolly'
@@ -423,13 +428,13 @@ def approve_all():
 # ── Test email ─────────────────────────────────────────────────────────────────
 @app.route('/api/test-email', methods=['POST'])
 def test_email():
-    if not GMAIL_PASS:
-        return jsonify({'error': 'GMAIL_APP_PASSWORD not set'}), 500
+    if not SENDGRID_KEY:
+        return jsonify({'error': 'SENDGRID_API_KEY not set in Railway environment variables'}), 500
     try:
         send_email(
             GMAIL_USER,
-            'CRM test email — its working',
-            f'This is a test from your Molly Fitness CRM.\n\nGmail is connected and emails are sending correctly.\n\nMolly'
+            'CRM test email - its working',
+            'This is a test from your Molly Fitness CRM.\n\nSendGrid is connected and emails are sending correctly.\n\nMolly'
         )
         return jsonify({'ok': True, 'to': GMAIL_USER})
     except Exception as e:
