@@ -490,7 +490,7 @@ def admin_sync():
 
 # ── Run ────────────────────────────────────────────────────────────────────────
 if __name__ == '__main__':
-    print(f'\nMolly\'s Fitness CRM -> http://localhost:{PORT}')
-    print(f'📧 Gmail: {"✅ Ready" if GMAIL_PASS else "⚠️  Add GMAIL_APP_PASSWORD to .env"}')
-    print(f'👥 Leads: {len(read_json(LEADS_FILE))} loaded\n')
+    print(f"\nMolly's Fitness CRM -> http://localhost:{PORT}")
+    print(f"Gmail: {'Ready' if GMAIL_PASS else 'WARNING: Add GMAIL_APP_PASSWORD to env'}")
+    print(f"Leads: {len(read_json(LEADS_FILE))} loaded\n")
     app.run(host='0.0.0.0', port=PORT, debug=False)
