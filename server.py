@@ -73,21 +73,23 @@ def _build_msg(to_addr, subject, body):
     msg.attach(MIMEText(body, 'plain'))
     return msg
 
+def _smtp_connection(timeout=30):
+    """Return an authenticated SMTP_SSL connection on port 465."""
+    s = smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=timeout)
+    s.login(GMAIL_USER, GMAIL_PASS)
+    return s
+
 def send_email(to_addr, subject, body):
     if not GMAIL_PASS:
         raise ValueError('GMAIL_APP_PASSWORD not configured')
-    with smtplib.SMTP('smtp.gmail.com', 587, timeout=15) as s:
-        s.ehlo(); s.starttls(); s.ehlo()
-        s.login(GMAIL_USER, GMAIL_PASS)
+    with _smtp_connection(timeout=15) as s:
         s.sendmail(GMAIL_USER, [to_addr], _build_msg(to_addr, subject, body).as_string())
 
 def send_email_batch(messages):
     """Send multiple (to_addr, subject, body) tuples over a single SMTP connection."""
     if not GMAIL_PASS:
         raise ValueError('GMAIL_APP_PASSWORD not configured')
-    with smtplib.SMTP('smtp.gmail.com', 587, timeout=30) as s:
-        s.ehlo(); s.starttls(); s.ehlo()
-        s.login(GMAIL_USER, GMAIL_PASS)
+    with _smtp_connection(timeout=30) as s:
         results = []
         for to_addr, subject, body in messages:
             try:
