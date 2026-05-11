@@ -79,6 +79,8 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 .stat-pill.green .num { color: #86efac; }
 .stat-pill.amber .num { color: #fde68a; }
 .stat-pill.white .num { color: var(--white); }
+.stat-pill.clickable { cursor: pointer; transition: transform 0.15s, opacity 0.15s; }
+.stat-pill.clickable:hover { transform: translateY(-2px); opacity: 0.85; }
 
 /* Goal bar */
 .goal-bar-wrap { margin-top: 10px; }
@@ -424,10 +426,10 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
     <span class="email-badge bad" id="emailBadge">⚠ Email not set</span>
   </div>
   <div class="stats-row">
-    <div class="stat-pill white"><div class="num" id="statTotal">—</div><div class="lbl">Total Leads</div></div>
-    <div class="stat-pill amber"><div class="num" id="statPending">—</div><div class="lbl">In Queue</div></div>
-    <div class="stat-pill pink"><div class="num" id="statSent">—</div><div class="lbl">Emails Sent</div></div>
-    <div class="stat-pill green"><div class="num" id="statConverted">—</div><div class="lbl">Clients</div></div>
+    <div class="stat-pill white clickable" onclick="switchTab('leads'); document.getElementById('leadStatus').value=''; loadLeads();"><div class="num" id="statTotal">—</div><div class="lbl">Total Leads</div></div>
+    <div class="stat-pill amber clickable" onclick="switchTab('queue')"><div class="num" id="statPending">—</div><div class="lbl">In Queue</div></div>
+    <div class="stat-pill pink clickable" onclick="switchTab('leads'); document.getElementById('leadStatus').value='sequence_complete'; loadLeads();"><div class="num" id="statSent">—</div><div class="lbl">Emails Sent</div></div>
+    <div class="stat-pill green clickable" onclick="switchTab('leads'); document.getElementById('leadStatus').value='client'; loadLeads();"><div class="num" id="statConverted">—</div><div class="lbl">Clients</div></div>
   </div>
   <div class="goal-bar-wrap">
     <div class="goal-bar-labels">

@@ -286,6 +286,7 @@ def do_generate_tasks():
     }
     new_tasks = []
     for lead in leads:
+        if len(new_tasks) >= DAILY_LIMIT: break
         if lead.get('status') != 'active': continue
         step = get_due_step(lead, today_str)
         if step == -1: continue
