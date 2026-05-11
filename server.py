@@ -394,41 +394,38 @@ def skip_task(tid):
 
 _send_lock = threading.Lock()
 
+DAILY_LIMIT = 200
+
 def _do_send_all(task_ids):
-    """Background thread: send all queued emails over one SMTP connection."""
+    """Background thread: send queued emails one at a time with a small delay."""
+    import time
     with _send_lock:
         tasks = read_json(TASKS_FILE)
         id_set = set(task_ids)
-        email_indices = []
-        to_send = []
-        for i, task in enumerate(tasks):
-            if task.get('id') not in id_set: continue
-            if task.get('channel') == 'email' and task.get('recipientEmail'):
-                email_indices.append(i)
-                to_send.append((task['recipientEmail'], task.get('subject', ''), task.get('script', '')))
-        if to_send:
+        email_indices = [(i, task) for i, task in enumerate(tasks)
+                         if task.get('id') in id_set and task.get('recipientEmail')]
+        for idx, task in email_indices:
             try:
-                results = send_email_batch(to_send)
-            except Exception:
-                results = [(addr, False, 'smtp error') for addr, _, __ in to_send]
-            for idx, (_, ok, _err) in zip(email_indices, results):
-                if ok:
-                    tasks[idx]['status'] = 'sent'
-                    tasks[idx]['sentAt'] = now_iso()
-                    advance_lead(tasks[idx].get('fitnessLeadId'), tasks[idx].get('sequenceStep', 0))
-                else:
-                    tasks[idx]['status'] = 'failed'
-        write_json(TASKS_FILE, tasks)
+                send_email(task['recipientEmail'], task.get('subject', ''), task.get('script', ''))
+                tasks[idx]['status'] = 'sent'
+                tasks[idx]['sentAt'] = now_iso()
+                advance_lead(task.get('fitnessLeadId'), task.get('sequenceStep', 0))
+            except Exception as e:
+                tasks[idx]['status']     = 'failed'
+                tasks[idx]['emailError'] = str(e)
+            write_json(TASKS_FILE, tasks)
+            time.sleep(1)  # 1 second between emails — avoids Gmail rate limits
 
 @app.route('/api/tasks/approve-all', methods=['POST'])
 def approve_all():
-    """Mark all pending tasks as queued, return immediately, send in background."""
+    """Queue up to DAILY_LIMIT pending tasks, send in background."""
     tasks = read_json(TASKS_FILE)
     queued_ids = []
     for i, task in enumerate(tasks):
+        if len(queued_ids) >= DAILY_LIMIT: break
         if task.get('taskType') != 'fitness_sequence': continue
         if task.get('status') != 'pending': continue
-        if task.get('channel') == 'email' and task.get('recipientEmail') and GMAIL_PASS:
+        if task.get('channel') == 'email' and task.get('recipientEmail') and (GMAIL_PASS or RESEND_KEY):
             tasks[i]['status'] = 'queued'
             queued_ids.append(task['id'])
         else:
