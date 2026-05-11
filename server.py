@@ -290,6 +290,7 @@ def do_generate_tasks():
         if lead.get('status') != 'active': continue
         step = get_due_step(lead, today_str)
         if step == -1: continue
+        if step != 0: continue  # Day 1 emails only — remove this line when ready to send follow-ups
         if (lead['id'], step) in exists: continue
         first   = get_first_name(lead.get('name', ''))
         content = _email(step, first)
