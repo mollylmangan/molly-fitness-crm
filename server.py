@@ -68,9 +68,8 @@ def get_first_name(full_name):
 # ── Email (Resend HTTPS API — SMTP blocked on Railway) ─────────────────────────
 import urllib.request as _urllib_req
 
-def _resend_send(to_addr, subject, body):
-    if not RESEND_KEY:
-        raise ValueError('RESEND_API_KEY not set in Railway variables')
+def _send_via_resend(to_addr, subject, body):
+    import urllib.error as _urllib_err
     payload = json.dumps({
         'from': 'Molly Mangan <onboarding@resend.dev>',
         'to': [to_addr],
@@ -84,22 +83,36 @@ def _resend_send(to_addr, subject, body):
         headers={'Authorization': f'Bearer {RESEND_KEY}', 'Content-Type': 'application/json'},
         method='POST'
     )
-    import urllib.error as _urllib_err
     try:
         with _urllib_req.urlopen(req, timeout=15) as r:
-            pass  # 200/201 = success
+            pass
     except _urllib_err.HTTPError as e:
-        body_text = e.read().decode()
-        raise ValueError(f'Resend {e.code}: {body_text}')
+        raise ValueError(f'Resend {e.code}: {e.read().decode()}')
+
+def _send_via_gmail(to_addr, subject, body):
+    msg = MIMEMultipart()
+    msg['From']    = f'"Molly Mangan" <{GMAIL_USER}>'
+    msg['To']      = to_addr
+    msg['Subject'] = subject
+    msg.attach(MIMEText(body, 'plain'))
+    with smtplib.SMTP('smtp.gmail.com', 587, timeout=20) as s:
+        s.ehlo(); s.starttls(); s.ehlo()
+        s.login(GMAIL_USER, GMAIL_PASS)
+        s.sendmail(GMAIL_USER, [to_addr], msg.as_string())
 
 def send_email(to_addr, subject, body):
-    _resend_send(to_addr, subject, body)
+    if RESEND_KEY:
+        _send_via_resend(to_addr, subject, body)
+    elif GMAIL_PASS:
+        _send_via_gmail(to_addr, subject, body)
+    else:
+        raise ValueError('No email credentials configured')
 
 def send_email_batch(messages):
     results = []
     for to_addr, subject, body in messages:
         try:
-            _resend_send(to_addr, subject, body)
+            send_email(to_addr, subject, body)
             results.append((to_addr, True, None))
         except Exception as e:
             results.append((to_addr, False, str(e)))
@@ -429,11 +442,12 @@ def approve_all():
 # ── Test email ─────────────────────────────────────────────────────────────────
 @app.route('/api/test-email', methods=['POST'])
 def test_email():
-    if not RESEND_KEY:
-        return jsonify({'error': 'RESEND_API_KEY not set in Railway variables'}), 500
+    if not RESEND_KEY and not GMAIL_PASS:
+        return jsonify({'error': 'No email credentials configured'}), 500
     try:
         send_email(GMAIL_USER, 'CRM test - its working', 'Test from your Molly Fitness CRM. Email is sending correctly.\n\nMolly')
-        return jsonify({'ok': True, 'to': GMAIL_USER})
+        method = 'Resend' if RESEND_KEY else 'Gmail'
+        return jsonify({'ok': True, 'to': GMAIL_USER, 'via': method})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
