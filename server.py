@@ -31,6 +31,7 @@ PORT        = int(os.environ.get('PORT', 3001))
 
 GMAIL_USER  = os.environ.get('GMAIL_USER', 'mollylmangan@gmail.com')
 GMAIL_PASS  = os.environ.get('GMAIL_APP_PASSWORD', '').replace(' ', '')
+RESEND_KEY  = os.environ.get('RESEND_API_KEY', '')
 ADMIN_KEY   = os.environ.get('ADMIN_KEY', '')
 
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -64,41 +65,40 @@ def get_first_name(full_name):
     first = full_name.strip().split()[0].title()
     return first if len(first) >= 2 and first.replace("'", '').isalpha() else 'there'
 
-# ── Gmail ──────────────────────────────────────────────────────────────────────
+# ── Email (Resend HTTPS API — SMTP blocked on Railway) ─────────────────────────
+import urllib.request as _urllib_req
+
+def _resend_send(to_addr, subject, body):
+    if not RESEND_KEY:
+        raise ValueError('RESEND_API_KEY not set in Railway variables')
+    payload = json.dumps({
+        'from': f'Molly Mangan <onboarding@resend.dev>',
+        'to': [to_addr],
+        'subject': subject,
+        'text': body,
+        'reply_to': GMAIL_USER
+    }).encode()
+    req = _urllib_req.Request(
+        'https://api.resend.com/emails',
+        data=payload,
+        headers={'Authorization': f'Bearer {RESEND_KEY}', 'Content-Type': 'application/json'},
+        method='POST'
+    )
+    with _urllib_req.urlopen(req, timeout=15) as r:
+        if r.status not in (200, 201):
+            raise ValueError(f'Resend error {r.status}: {r.read().decode()}')
+
 def send_email(to_addr, subject, body):
-    if not GMAIL_PASS:
-        raise ValueError('GMAIL_APP_PASSWORD not set')
-    msg = MIMEMultipart()
-    msg['From']    = f'"Molly Mangan" <{GMAIL_USER}>'
-    msg['To']      = to_addr
-    msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'plain'))
-    with smtplib.SMTP('smtp.gmail.com', 587, timeout=20) as s:
-        s.ehlo(); s.starttls(); s.ehlo()
-        s.login(GMAIL_USER, GMAIL_PASS)
-        s.sendmail(GMAIL_USER, [to_addr], msg.as_string())
+    _resend_send(to_addr, subject, body)
 
 def send_email_batch(messages):
     results = []
-    if not GMAIL_PASS:
-        return [(a, False, 'GMAIL_APP_PASSWORD not set') for a, _, __ in messages]
-    msg_objects = []
     for to_addr, subject, body in messages:
-        msg = MIMEMultipart()
-        msg['From']    = f'"Molly Mangan" <{GMAIL_USER}>'
-        msg['To']      = to_addr
-        msg['Subject'] = subject
-        msg.attach(MIMEText(body, 'plain'))
-        msg_objects.append((to_addr, msg))
-    with smtplib.SMTP('smtp.gmail.com', 587, timeout=30) as s:
-        s.ehlo(); s.starttls(); s.ehlo()
-        s.login(GMAIL_USER, GMAIL_PASS)
-        for to_addr, msg in msg_objects:
-            try:
-                s.sendmail(GMAIL_USER, [to_addr], msg.as_string())
-                results.append((to_addr, True, None))
-            except Exception as e:
-                results.append((to_addr, False, str(e)))
+        try:
+            _resend_send(to_addr, subject, body)
+            results.append((to_addr, True, None))
+        except Exception as e:
+            results.append((to_addr, False, str(e)))
     return results
 
 # ── Email sequence templates ───────────────────────────────────────────────────
@@ -425,19 +425,13 @@ def approve_all():
 # ── Test email ─────────────────────────────────────────────────────────────────
 @app.route('/api/test-email', methods=['POST'])
 def test_email():
-    if not GMAIL_PASS:
-        return jsonify({'error': 'GMAIL_APP_PASSWORD not set in Railway variables'}), 500
+    if not RESEND_KEY:
+        return jsonify({'error': 'RESEND_API_KEY not set in Railway variables'}), 500
     try:
-        send_email(
-            GMAIL_USER,
-            'CRM test email - its working',
-            'This is a test from your Molly Fitness CRM.\n\nGmail is connected and emails are sending correctly.\n\nMolly'
-        )
+        send_email(GMAIL_USER, 'CRM test - its working', 'Test from your Molly Fitness CRM. Email is sending correctly.\n\nMolly')
         return jsonify({'ok': True, 'to': GMAIL_USER})
     except Exception as e:
-        # Include password length to help diagnose credential issues (not the value itself)
-        debug = f'Error: {e} | user={GMAIL_USER} | pass_len={len(GMAIL_PASS)} | pass_chars={len(GMAIL_PASS.replace(" ",""))}'
-        return jsonify({'error': debug}), 500
+        return jsonify({'error': str(e)}), 500
 
 # ── Clear queue ────────────────────────────────────────────────────────────────
 @app.route('/api/tasks/clear', methods=['POST'])
