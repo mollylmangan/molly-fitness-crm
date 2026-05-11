@@ -72,7 +72,7 @@ def _resend_send(to_addr, subject, body):
     if not RESEND_KEY:
         raise ValueError('RESEND_API_KEY not set in Railway variables')
     payload = json.dumps({
-        'from': f'Molly Mangan <onboarding@resend.dev>',
+        'from': 'Molly Mangan <onboarding@resend.dev>',
         'to': [to_addr],
         'subject': subject,
         'text': body,
@@ -84,9 +84,13 @@ def _resend_send(to_addr, subject, body):
         headers={'Authorization': f'Bearer {RESEND_KEY}', 'Content-Type': 'application/json'},
         method='POST'
     )
-    with _urllib_req.urlopen(req, timeout=15) as r:
-        if r.status not in (200, 201):
-            raise ValueError(f'Resend error {r.status}: {r.read().decode()}')
+    import urllib.error as _urllib_err
+    try:
+        with _urllib_req.urlopen(req, timeout=15) as r:
+            pass  # 200/201 = success
+    except _urllib_err.HTTPError as e:
+        body_text = e.read().decode()
+        raise ValueError(f'Resend {e.code}: {body_text}')
 
 def send_email(to_addr, subject, body):
     _resend_send(to_addr, subject, body)
