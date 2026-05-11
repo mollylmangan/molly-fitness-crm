@@ -111,6 +111,10 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 .btn-green:hover { background: #15803d; }
 .btn-danger { background: #dc2626; color: var(--white); border: none; }
 .btn-danger:hover { background: #b91c1c; }
+.queue-filters { display: flex; gap: 8px; padding: 12px 0 4px; }
+.qf-btn { padding: 6px 16px; border-radius: 20px; border: 1.5px solid var(--border); background: transparent; color: var(--text-muted); font-size: 13px; cursor: pointer; transition: all 0.15s; }
+.qf-btn:hover { border-color: var(--pink); color: var(--pink); }
+.qf-btn.active { background: var(--pink); color: white; border-color: var(--pink); font-weight: 600; }
 .btn-sm { padding: 7px 12px; font-size: 13px; min-height: 36px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-loading { position: relative; pointer-events: none; }
@@ -483,6 +487,11 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
       <span class="icon">⚠️</span>
       <span>Gmail not configured — emails will be queued but not sent. Add your <strong>GMAIL_APP_PASSWORD</strong> to the <code>.env</code> file and restart.</span>
     </div>
+    <div class="queue-filters">
+      <button class="qf-btn active" onclick="setQueueFilter('all', this)">All</button>
+      <button class="qf-btn" onclick="setQueueFilter('stan', this)">Stan.Store</button>
+      <button class="qf-btn" onclick="setQueueFilter('shopify', this)">Shopify</button>
+    </div>
     <div id="taskList" class="task-list">
       <div class="skeleton-card"><div class="skeleton" style="height:20px;width:60%;margin-bottom:10px"></div><div class="skeleton" style="height:14px;width:90%"></div></div>
       <div class="skeleton-card"><div class="skeleton" style="height:20px;width:50%;margin-bottom:10px"></div><div class="skeleton" style="height:14px;width:85%"></div></div>
@@ -638,15 +647,43 @@ async function loadStats() {
 }
 
 // ── Task Queue ────────────────────────────────────────────────────────────────
+let _allQueueTasks = [];
+let _queueFilter = 'all';
+
+function setQueueFilter(filter, btn) {
+  _queueFilter = filter;
+  document.querySelectorAll('.qf-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderQueue();
+}
+
+function renderQueue() {
+  const list = document.getElementById('taskList');
+  let tasks = _allQueueTasks;
+  if (_queueFilter === 'stan') tasks = tasks.filter(t => {
+    const s = (t.recipientSource || '').toLowerCase();
+    return s.includes('stan') && !s.includes('shopify');
+  });
+  if (_queueFilter === 'shopify') tasks = tasks.filter(t => {
+    const s = (t.recipientSource || '').toLowerCase();
+    return s.includes('shopify') && !s.includes('stan');
+  });
+  if (!tasks.length) {
+    list.innerHTML = `<div class="empty"><div class="icon">🎉</div><strong>No tasks in this filter.</strong><p>Try "All" or generate more emails.</p></div>`;
+    return;
+  }
+  list.innerHTML = tasks.map(t => taskCard(t)).join('');
+}
+
 async function loadQueue() {
   const list = document.getElementById('taskList');
   try {
-    const tasks = await api('/api/tasks?status=pending');
-    if (!tasks.length) {
+    _allQueueTasks = await api('/api/tasks?status=pending');
+    if (!_allQueueTasks.length) {
       list.innerHTML = `<div class="empty"><div class="icon">🎉</div><strong>Queue is empty!</strong><p>Hit "Generate Today's Emails" to load the next batch.</p></div>`;
       return;
     }
-    list.innerHTML = tasks.map(t => taskCard(t)).join('');
+    renderQueue();
   } catch(e) {
     list.innerHTML = `<div class="empty"><div class="icon">❌</div>Failed to load tasks</div>`;
   }

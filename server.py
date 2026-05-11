@@ -303,10 +303,11 @@ def do_generate_tasks():
             'channel':       'email',
             'subject':       content['subject'],
             'script':        content['body'],
-            'recipientEmail': lead.get('email', ''),
-            'recipientName':  lead.get('name', ''),
-            'scheduledDay':   today_str,
-            'createdAt':      now_iso(),
+            'recipientEmail':  lead.get('email', ''),
+            'recipientName':   lead.get('name', ''),
+            'recipientSource': lead.get('source', ''),
+            'scheduledDay':    today_str,
+            'createdAt':       now_iso(),
         })
     if new_tasks:
         tasks.extend(new_tasks)
