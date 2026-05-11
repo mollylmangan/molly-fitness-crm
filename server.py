@@ -367,7 +367,13 @@ def approve_task(tid):
     idx   = next((i for i, t in enumerate(tasks) if t['id'] == tid), None)
     if idx is None: return jsonify({'error': 'Not found'}), 404
     task = tasks[idx]
-    if task.get('channel') == 'email' and task.get('recipientEmail') and GMAIL_PASS:
+    # Safety net: block if already sent
+    if _already_sent(tasks, task.get('fitnessLeadId'), task.get('sequenceStep', 0)):
+        tasks[idx]['status'] = 'skipped'
+        tasks[idx]['skipReason'] = 'duplicate — already sent this step'
+        write_json(TASKS_FILE, tasks)
+        return jsonify({'error': 'Already sent to this person — skipped to prevent duplicate'}), 409
+    if task.get('channel') == 'email' and task.get('recipientEmail') and (GMAIL_PASS or RESEND_KEY):
         try:
             send_email(task['recipientEmail'], task.get('subject', ''), task.get('script', ''))
             tasks[idx]['status'] = 'sent'
@@ -399,6 +405,15 @@ _send_lock = threading.Lock()
 
 DAILY_LIMIT = 200
 
+def _already_sent(tasks, lead_id, step):
+    """Return True if this lead already has a sent task for this step."""
+    return any(
+        t.get('fitnessLeadId') == lead_id and
+        t.get('sequenceStep') == step and
+        t.get('status') == 'sent'
+        for t in tasks
+    )
+
 def _do_send_all(task_ids):
     """Background thread: send queued emails one at a time with a small delay."""
     import time
@@ -408,11 +423,19 @@ def _do_send_all(task_ids):
         email_indices = [(i, task) for i, task in enumerate(tasks)
                          if task.get('id') in id_set and task.get('recipientEmail')]
         for idx, task in email_indices:
+            lead_id = task.get('fitnessLeadId')
+            step    = task.get('sequenceStep', 0)
+            # Safety net: never send if this step was already sent to this person
+            if _already_sent(tasks, lead_id, step):
+                tasks[idx]['status']     = 'skipped'
+                tasks[idx]['skipReason'] = 'duplicate — already sent this step'
+                write_json(TASKS_FILE, tasks)
+                continue
             try:
                 send_email(task['recipientEmail'], task.get('subject', ''), task.get('script', ''))
                 tasks[idx]['status'] = 'sent'
                 tasks[idx]['sentAt'] = now_iso()
-                advance_lead(task.get('fitnessLeadId'), task.get('sequenceStep', 0))
+                advance_lead(lead_id, step)
             except Exception as e:
                 tasks[idx]['status']     = 'failed'
                 tasks[idx]['emailError'] = str(e)
