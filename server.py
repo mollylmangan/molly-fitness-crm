@@ -282,7 +282,7 @@ def do_generate_tasks():
     exists = {
         (t.get('fitnessLeadId'), t.get('sequenceStep'))
         for t in tasks
-        if t.get('fitnessLeadId') and t.get('status') in ('pending', 'approved', 'sent')
+        if t.get('fitnessLeadId') and t.get('status') in ('pending', 'approved', 'sent', 'queued', 'failed')
     }
     new_tasks = []
     for lead in leads:
